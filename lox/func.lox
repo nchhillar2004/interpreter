@@ -1,0 +1,28 @@
+fun printSum(a, b) {
+    print a + b;
+}
+
+fun returnSum(a, b) {
+    return a + b;
+}
+
+// Closures
+
+fun identity(a) {
+    return a;
+}
+
+print identity(returnSum)(10, 2); // prints "12"
+
+fun returnFunction() {
+    var outside = "Outside";
+    
+    fun inner() {
+        print outside;
+    }
+
+    return inner;
+}
+
+var fn = returnFunction();
+fn();

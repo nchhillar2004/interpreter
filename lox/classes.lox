@@ -1,0 +1,20 @@
+class Arithmetic{
+    init () {
+        print "Arithmetic calculations";
+    }
+
+    add(a, b) {
+        var sum = a + b;
+        print "Sum: " + sum;
+    }
+}
+
+class Maths < Arithmetic {
+    sub(a, b) {
+        print a - b;
+    }
+}
+
+var mth = Maths();
+print mth.add(10, 2); // Sum: 12
+print mrh.sub(10, 2); // 8

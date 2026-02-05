@@ -1,0 +1,17 @@
+// sample lox program
+
+print "Hello, world!";
+
+var name = "nchhillar";
+var age = 21;
+
+// Nil by default
+var address;
+
+print name;
+
+if (age >= 18) {
+    print "can vote";
+} else {
+    print "can't vote";
+}
