@@ -8,11 +8,12 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-/* Lox scripting language */
+// Main entry point for the Lox interpreter.
+// Handles running files or starting an interactive REPL, then pipes code through Scanner -> Parser -> AST printer.
 public class Jlox {
     static boolean hadError = false;
 
-    /* ----- Main function ----- */
+    // Entry point: decide whether to run a file or start REPL based on command line args.
     public static void main(String[] args) throws IOException{
         if (args.length > 1) {
             System.out.println("Usage: jlox [script]");
@@ -24,7 +25,7 @@ public class Jlox {
         }
     }
 
-    // If path given, jlox reads the file and executes it
+    // Read a file and run it once (batch mode).
     private static void runFile (String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
@@ -32,35 +33,33 @@ public class Jlox {
         if (hadError) System.exit(65);
     }
 
-    // Else, run interactively, enter and execute code one line at a time
+    // Interactive REPL: read one line, run it, print result, repeat.
     private static void runPrompt() throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
-        // Infinitely run jlox interactive prompt
         for (;;) {
             System.out.print("jloxi> ");
             String line = reader.readLine();
-            if (line == null) break;
+            if (line == null) break; // EOF (Ctrl+D)
             run(line);
-            hadError = false; // if user makes mistake, it shouldn't kill their entire session
+            hadError = false; // reset so one mistake doesn't kill the session
         }
     }
 
-    // Both file runner and the prompt are wrappers around this core 'run' function
+    // Core pipeline: source text -> tokens -> AST -> print it.
     private static void run(String source) {
         Scanner sc = new Scanner(source);
         List<Token> tokens = sc.scanTokens();
         Parser parser = new Parser(tokens);
         Expr expression = parser.parse();
 
-        // Stop if there was a syntax error.
-        if (hadError) return;
+        if (hadError) return; // don't try to print broken AST
 
         System.out.println(new AstPrinter().print(expression));
     }
 
-    /* ----- Error handling ----- */
+    // Error reporting helpers.
     static void error(int line, String message) {
         report(line, "", message);
     }

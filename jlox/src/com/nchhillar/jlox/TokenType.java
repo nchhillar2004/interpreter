@@ -1,5 +1,6 @@
 package com.nchhillar.jlox;
 
+// All possible token types in Lox.
 enum TokenType {
     // Single-character tokens.
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
@@ -11,12 +12,12 @@ enum TokenType {
     GREATER, GREATER_EQUAL,
     LESS, LESS_EQUAL,
 
-    // Literals
+    // Literals (values in the code).
     IDENTIFIER, STRING, NUMBER,
 
-    // Keywords
+    // Keywords (reserved words).
     AND, OR, IF, ELSE, FOR, WHILE, NIL, TRUE, FALSE,
     PRINT, FUN, RETURN, SUPER, CLASS, THIS, VAR,
 
-    EOF
+    EOF // end of file marker
 }

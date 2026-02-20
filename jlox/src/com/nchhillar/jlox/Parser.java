@@ -8,27 +8,33 @@ class Parser {
     private static class ParseError extends RuntimeException {}
 
     private final List<Token> tokens;
-    private int current = 0;
+    private int current = 0; // current position in token list
 
     Parser(List<Token> tokens) {
         this.tokens = tokens;
     }
 
+    // Entry point: parse tokens into an expression tree.
     Expr parse() {
         try {
             return expression();
         } catch (ParseError error) {
-            return null;
+            return null; // error already reported
         }
     }
+
+    // Expression parsing follows operator precedence (lowest to highest):
+    // equality -> comparison -> term -> factor -> unary -> primary
 
     private Expr expression() {
         return equality();
     }
 
+    // Equality operators: ==, != (lowest precedence).
     private Expr equality() {
         Expr expr = comparison();
 
+        // Keep matching equality operators and building left-associative tree.
         while (match(BANG_EQUAL, EQUAL_EQUAL)) {
             Token operator = previous();
             Expr right = comparison();
@@ -38,6 +44,7 @@ class Parser {
         return expr;
     }
 
+    // Comparison operators: >, >=, <, <=.
     private Expr comparison() {
         Expr expr = term();
 
@@ -50,6 +57,7 @@ class Parser {
         return expr;
     }
 
+    // Addition/subtraction: +, -.
     private Expr term() {
         Expr expr = factor();
 
@@ -62,6 +70,7 @@ class Parser {
         return expr;
     }
 
+    // Multiplication/division: *, /.
     private Expr factor() {
         Expr expr = unary();
 
@@ -74,16 +83,18 @@ class Parser {
         return expr;
     }
 
+    // Unary operators: !, - (right-associative).
     private Expr unary() {
         if (match(BANG, MINUS)) {
             Token operator = previous();
-            Expr right = unary();
+            Expr right = unary(); // recursive for right-associativity
             return new Expr.Unary(operator, right);
         }
 
         return primary();
     }
 
+    // Atoms: literals, identifiers, parenthesized expressions.
     private Expr primary() {
         if (match(FALSE)) return new Expr.Literal(false);
         if (match(TRUE)) return new Expr.Literal(true);
@@ -101,6 +112,7 @@ class Parser {
         throw error(peek(), "Expected expression.");
     }
 
+    // Check if current token matches any of the given types, consume if so.
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
             if (check(type)) {
@@ -112,18 +124,21 @@ class Parser {
         return false;
     }
 
+    // Require a specific token type or throw error.
     private Token consume(TokenType type, String message) {
         if (check(type)) return advance();
 
         throw error(peek(), message);
     }
 
+    // Skip tokens until we find a statement boundary (for error recovery).
     private void synchronize() {
         advance();
 
         while (!isAtEnd()) {
             if (previous().type == SEMICOLON) return;
 
+            // Stop at start of next statement.
             switch (peek().type) {
                 case CLASS:
                 case FUN:
@@ -140,11 +155,13 @@ class Parser {
         }
     }
 
+    // Check if current token matches type without consuming it.
     private boolean check(TokenType type) {
         if (isAtEnd()) return false;
         return peek().type == type;
     }
 
+    // Move to next token and return the previous one.
     private Token advance() {
         if (!isAtEnd()) current++;
         return previous();
@@ -154,14 +171,17 @@ class Parser {
         return peek().type == EOF;
     }
 
+    // Get current token without consuming it.
     private Token peek() {
         return tokens.get(current);
     }
 
+    // Get previous token.
     private Token previous() {
         return tokens.get(current - 1);
     }
 
+    // Report error and return ParseError to unwind call stack.
     private ParseError error(Token token, String message) {
         Jlox.error(token, message);
         return new ParseError();

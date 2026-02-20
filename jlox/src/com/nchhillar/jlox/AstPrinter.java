@@ -1,5 +1,7 @@
 package com.nchhillar.jlox;
 
+// Pretty-prints the AST as a parenthesized expression (like Lisp).
+// Uses the Visitor pattern to walk the tree and build a string.
 class AstPrinter implements Expr.Visitor<String> {
     String print (Expr expr) {
         return expr.accept(this);
@@ -26,13 +28,15 @@ class AstPrinter implements Expr.Visitor<String> {
         return parenthesize(expr.operator.lexeme, expr.right);
     }
 
+    // Helper: wrap name and sub-expressions in parentheses.
+    // Example: parenthesize("+", 1, 2) -> "(+ 1 2)"
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
 
         builder.append("(").append(name);
         for (Expr expr : exprs) {
             builder.append(" ");
-            builder.append(expr.accept(this));
+            builder.append(expr.accept(this)); // recursively print sub-expressions
         }
         builder.append(")");
 

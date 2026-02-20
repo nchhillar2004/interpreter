@@ -10,6 +10,7 @@ import java.util.Map;
 class Scanner {
     private final String source;
     private final List<Token> tokens = new ArrayList<>();
+    // Map of reserved words to their token types.
     private static final Map<String, TokenType> keywords;
 
     static {
@@ -41,25 +42,22 @@ class Scanner {
         this.source = source;
     }
 
-    // Scan tokens, add tokens, until runs out of characters
+    // Main scanning loop: go through source and build token list.
     List<Token>  scanTokens() {
-        // loop inside the source code, scan
         while (!isAtEnd()) {
-            // We are at the beginning of the next lexeme.
-            start = current;
-            scanToken(); // each turn of loop we scan single token
+            start = current; // mark start of next token
+            scanToken();
         }
 
-        // append one final "end of line" token
-        tokens.add(new Token(EOF, "", null, line));
+        tokens.add(new Token(EOF, "", null, line)); // add EOF marker
         return tokens;
     }
 
-    // Recognizing Lexemes
+    // Look at next char and figure out what kind of token it starts.
     private void scanToken() {
         char c = advance();
         switch(c) {
-            // single character lexemes
+            // Single-char tokens.
             case '(': addToken(LEFT_PAREN); break;
             case ')': addToken(RIGHT_PAREN); break;
             case '{': addToken(LEFT_BRACE); break;
@@ -71,6 +69,7 @@ class Scanner {
             case ';': addToken(SEMICOLON); break;
             case '*': addToken(STAR); break;
 
+            // Two-char tokens: check if next char matches.
             case '!':
                 addToken(match('=') ? BANG_EQUAL : BANG);
                 break;
@@ -84,37 +83,36 @@ class Scanner {
                 addToken(match('=') ? GREATER_EQUAL : GREATER);
                 break;
 
-            // longer lexemes
+            // Slash could be division or comment.
             case '/':
                 if (match('/')) {
-                    // A comment goes until the end of the line.
+                    // Comment: skip until newline.
                     while (peek() != '\n' && !isAtEnd()) advance();
                 } else {
                     addToken(SLASH);
                 }
                 break;
 
-            // newlines and whitespaces
+            // Whitespace: just skip it.
             case ' ':
             case '\r':
             case '\t':
-                break; // Ignore whitespace.
+                break;
 
             case '\n':
                 line++;
                 break;
 
-            // String literals
+            // String literal starts here.
             case '"': string(); break;
 
-            // reserved words and identifiers
+            // Special case for "or" keyword (incomplete - should use identifier()).
             case 'o':
                 if (peek() == 'r') {
                     addToken(OR);
                 }
                 break;
 
-            // Error if unexpected char
             default:
                 if (isDigit(c)) {
                     number();
@@ -127,32 +125,33 @@ class Scanner {
         }
     }
 
+    // Scan an identifier or keyword.
     private void identifier() {
         while (isAlphaNumeric(peek())) advance();
 
         String text = source.substring(start, current);
         TokenType type = keywords.get(text);
-        if (type == null) type = IDENTIFIER;
+        if (type == null) type = IDENTIFIER; // not a keyword, so it's user-defined
         addToken(type);
     }
 
+    // Scan a number (integer or decimal).
     private void number() {
         while (isDigit(peek())) advance();
 
-        // Look for a fractional part.
+        // Check for decimal point followed by digits.
         if (peek() == '.' && isDigit(peekNext())) {
-            // Consume the "."
-            advance();
-
+            advance(); // consume the '.'
             while (isDigit(peek())) advance();
         }
 
         addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
     }
 
+    // Scan a string literal between quotes.
     private void string() {
         while (peek() != '"' && !isAtEnd()) {
-            if (peek() == '\n') line++;
+            if (peek() == '\n') line++; // strings can span lines
             advance();
         }
 
@@ -161,37 +160,36 @@ class Scanner {
             return;
         }
 
-        // The closing ".
-        advance();
-        // Trin the surrounding quotes.
+        advance(); // consume closing quote
+        // Extract string value without the quotes.
         String value = source.substring(start + 1, current - 1);
         addToken(STRING, value);
     }
 
-    /* ----- Helper functions ----- */
+    // Helper functions.
 
-    // tells if we've consumed all the characters
     private boolean isAtEnd() {
         return current >= source.length();
     }
 
-    // consumes the next character in the source file and returns it
+    // Move forward one char and return it.
     private char advance(){
         current++;
         return source.charAt(current - 1);
     }
 
-    // grab the text of current lexeme and creates a new token for it
+    // Create token with no literal value.
     private void addToken(TokenType type) {
         addToken(type, null);
     }
 
-    // overload to handle literal values too
+    // Create token with a literal value (for numbers, strings, etc.).
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));
     }
 
+    // Conditionally consume next char if it matches (for two-char tokens).
     private boolean match(char expected) {
         if (isAtEnd()) return false;
         if (source.charAt(current) != expected) return false;
@@ -200,11 +198,13 @@ class Scanner {
         return true;
     }
 
+    // Look at current char without consuming it.
     private char peek() {
         if (isAtEnd()) return '\0';
         return source.charAt(current);
     }
 
+    // Look ahead one char without consuming.
     private char peekNext() {
         if (current + 1 >= source.length()) return '\0';
         return source.charAt(current + 1);
