@@ -16,15 +16,30 @@ public class GenerateAst {
         String outputDir = args[0];
         // Define AST node types: "ClassName : field1, field2, ..."
         defineAst(outputDir, "Expr", Arrays.asList(
+            "Assign   : Token name, Expr value",
             "Binary   : Expr left, Token operator, Expr right",
+            "Call     : Expr callee, Token paren, List<Expr> arguments",
+            "Get      : Expr object, Token name",
             "Grouping : Expr expression",
             "Literal  : Object value",
-            "Unary    : Token operator, Expr right"
+            "Logical  : Expr left, Token operator, Expr right",
+            "Set      : Expr object, Token name, Expr value",
+            "This     : Token keyword",
+            "Super    : Token keyword, Token method",
+            "Unary    : Token operator, Expr right",
+            "Variable : Token name"
         ));
 
         defineAst(outputDir, "Stmt", Arrays.asList(
+            "Block      : List<Stmt> statements",
+            "Class      : Token name, Expr.Variable superclass, List<Stmt.Function> methods",
             "Expression : Expr expression",
-            "Print      : Expr expression"
+            "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
+            "Function   : Token name, List<Token> params, List<Stmt> body",
+            "Print      : Expr expression",
+            "Var        : Token name, Expr initializer",
+            "Return     : Token keyword, Expr value",
+            "While      : Expr condition, Stmt body"
         ));
     }
 
