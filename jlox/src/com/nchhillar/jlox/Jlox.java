@@ -55,11 +55,11 @@ public class Jlox {
         Scanner sc = new Scanner(source);
         List<Token> tokens = sc.scanTokens();
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         if (hadError) return; // don't try to print broken AST
 
-        interpreter.interpret(expression);
+        interpreter.interpret(statements);
     }
 
     // Error reporting helpers.

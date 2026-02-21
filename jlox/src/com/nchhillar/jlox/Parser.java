@@ -1,5 +1,6 @@
 package com.nchhillar.jlox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.nchhillar.jlox.TokenType.*;
@@ -14,13 +15,12 @@ class Parser {
         this.tokens = tokens;
     }
 
-    // Entry point: parse tokens into an expression tree.
-    Expr parse() {
-        try {
-            return expression();
-        } catch (ParseError error) {
-            return null; // error already reported
+    List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
         }
+        return statements;
     }
 
     // Expression parsing follows operator precedence (lowest to highest):
@@ -28,6 +28,24 @@ class Parser {
 
     private Expr expression() {
         return equality();
+    }
+
+    private Stmt statement() {
+        if (match(PRINT)) return printStatement();
+
+        return expressionStatement();
+    }
+
+    private Stmt printStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
     }
 
     // Equality operators: ==, != (lowest precedence).
