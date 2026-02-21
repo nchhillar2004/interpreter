@@ -11,7 +11,9 @@ import java.nio.file.Paths;
 // Main entry point for the Lox interpreter.
 // Handles running files or starting an interactive REPL, then pipes code through Scanner -> Parser -> AST printer.
 public class Jlox {
+    private static final Interpreter interpreter = new Interpreter();
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
 
     // Entry point: decide whether to run a file or start REPL based on command line args.
     public static void main(String[] args) throws IOException{
@@ -31,6 +33,7 @@ public class Jlox {
         run(new String(bytes, Charset.defaultCharset()));
 
         if (hadError) System.exit(65);
+        if (hadRuntimeError) System.exit(70);
     }
 
     // Interactive REPL: read one line, run it, print result, repeat.
@@ -56,7 +59,7 @@ public class Jlox {
 
         if (hadError) return; // don't try to print broken AST
 
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
 
     // Error reporting helpers.
@@ -75,5 +78,11 @@ public class Jlox {
         } else {
             report(token.line, " at '" + token.lexeme + "'", message);
         }
+    }
+
+    static void runtimeError(RuntimeError error) {
+        System.err.println(error.getMessage() +
+            "\n[line " + error.token.line + "]");
+        hadRuntimeError = true;
     }
 }
