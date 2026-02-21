@@ -58,6 +58,11 @@ public class Jlox {
         List<Stmt> statements = parser.parse();
 
         if (hadError) return; // don't try to print broken AST
+        
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+        
+        if (hadError) return;
 
         interpreter.interpret(statements);
     }
