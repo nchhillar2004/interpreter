@@ -13,16 +13,3 @@ fun identity(a) {
 }
 
 print identity(returnSum)(10, 2); // prints "12"
-
-fun returnFunction() {
-    var outside = "Outside";
-    
-    fun inner() {
-        print outside;
-    }
-
-    return inner;
-}
-
-var fn = returnFunction();
-fn();

@@ -5,16 +5,16 @@ class Arithmetic{
 
     add(a, b) {
         var sum = a + b;
-        print "Sum: " + sum;
+        return sum;
     }
 }
 
 class Maths < Arithmetic {
     sub(a, b) {
-        print a - b;
+        return a - b;
     }
 }
 
 var mth = Maths();
 print mth.add(10, 2); // Sum: 12
-print mrh.sub(10, 2); // 8
+print mth.sub(10, 2); // 8
