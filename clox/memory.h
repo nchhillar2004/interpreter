@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "object.h"
+#include <cstddef>
 
 #define ALLOCATE(type, count) \
     (type*)reallocate(NULL, 0, sizeof(type) * (count))
